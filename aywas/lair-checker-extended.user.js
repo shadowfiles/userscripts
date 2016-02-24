@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Lair Checker Adjusted
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  try to take over the world!
-// @author       You
+// @author       Tiff Zhang (derivative from bookmarklet at http://aywaslairchecker.mygamesonline.org/ )
 // @match        http://www.aywas.com/*
 // @grant        none
 // ==/UserScript==
@@ -13,7 +13,7 @@ var alwaysHighlight = false;
 
 // Lair Checker script taken from http://aywaslairchecker.mygamesonline.org/
 function lair_check() {
-    
+
     // <Species Name> <Genus Name> : <image url>
     var process = function() {
         var page = 1,
@@ -125,9 +125,9 @@ function lair_check() {
             for (i = 0; i < petsTable.length; i += 1) {
                 addTable(petsTable[i]);
             }
-            
+
             localStorage.setItem("petImages", JSON.stringify(petImages));
-            
+
             localStorage.setItem("petsList", JSON.stringify(resultsTable));
             generateOutput();
         }
@@ -144,7 +144,7 @@ function lair_check() {
                     //xml = xml.replace(/<[^\/]*img[^>]*>([^<]*<[^\/\w]*\/img[^>]*>)*/gi, "");
                     pageResult = $(xml).find('div#lair-sort-pets > div');
                     for (i = 0; i < pageResult.length; i += 1) {
-                        
+
                         pageResult[i].innerHTML = pageResult[i].innerHTML.replace(/src\s*=\s*"http:\/\/www\.aywas\.com\/+images(\/+images)?\/pets\/([^"]+)"/gi, function (match, $i, identifier) {
                             petImages[identifier] = true;
                             return "";
@@ -186,11 +186,11 @@ function lair_check() {
             $('body').append($('<h1>Aywas Lair Checker V' + version + '</h1>'));
             window.setTimeout(versionCheck, 1);
             fetchPage();
-             
+
         };
         document.getElementsByTagName('head')[0].appendChild(script);
     };
-    
+
     if (!(location.host.match(/.*aywas.*/ig) && location.host.match(/.*aywas.*/ig).length) && !(location.hostname.match(/.*aywas.*/ig) && location.hostname.match(/.*aywas.*/ig).length)) {
         alert("Please re-run this bookmarklet from Aywas.com!");
         location.href = "http://www.aywas.com/";
@@ -200,53 +200,47 @@ function lair_check() {
 };
 
 $(document).ready(function() {
-    
-    var map = []; 
-    
+
+    var map = [];
+
     $("#side-mail").prepend('<p><a href="javascript:;" id="owned-pets-button" class="ctabtn normal"><span>Owned Pets</span></a></p>');
     $("#side-mail").prepend('<p><a href="#" id="lair-check-button" class="ctabtn normal"><span>Check Lair</span></a></p>');
     $("#lair-check-button").click(function() {
         lair_check();
     });
-    
-    function highlightPets(parent) {
-        if (!parent) {
-            parent = $("#content");
-        }
+
+    function highlightPets() {
         var petsList = JSON.parse(localStorage.getItem("petsList"));
         var petImages = JSON.parse(localStorage.getItem("petImages"));
-        
-        var newContent = parent.html().replace(/the\s+(Male|Female|Androgynous|Hermaphrodite|Undecided|Robot|Genderless|Agender|Bigender|Genderqueer|Neutrois|Pangender|Genderfluid|Non-Binary|Intersex|Other)\s+([^\(]+)\(/gi, 
-                                                    function(match, gender, pet) {
-                                                        pet = pet.trim();
-                                                        if (petsList[pet]) {
-                                                            pet += " (OWNED)";
-                                                        }
-                                                        return "the " + gender + " " + pet + " ("; 
-                                                    });
-        var newContent = newContent.replace(/src\s*=\s*"(http:\/\/www\.aywas\.com\/+images(\/+images)?\/pets\/([^"]+))"/gi, function (match, url, $1, identifier) {
-            if (petImages[identifier]) {
-                return match + ' style="background-color: green;" ';
+
+        var imageRegex = /http:\/\/www\.aywas\.com\/+images(\/+images)?\/pets\/([^"]+)/i;
+        $("#content img").each(function () {
+            var res = $(this).attr('src').match(imageRegex);
+            if (res) {
+                var ident = res[2];
+                if (petImages[ident]) {
+                    $(this).css("background-color", "green");
+                } else {
+                    $(this).css("background-color", "red");
+                }
             }
-            return match + ' style="background-color: red;" ';
         });
-        parent.html(newContent);
     }
-    
+
     $("#owned-pets-button").click(highlightPets);
-    
+
     // From http://stackoverflow.com/questions/5203407/javascript-multiple-keys-pressed-at-once
     onkeydown = onkeyup = function(e){
         e = e || event; // to deal with IE
         map[e.keyCode] = e.type == 'keydown';
-        
+
         if (map[17] && map[81]) {
             highlightPets();
         }
     }
-    
+
     if (alwaysHighlight) {
         highlightPets();
     }
-    
+
 });
