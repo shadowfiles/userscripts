@@ -33,6 +33,7 @@ $(document).bind('DOMNodeInserted', function(e) {
                 var url = "http://www.aywas.com/pet_shops/buy/?shopid=" + shopid + "&petid=" + petid;
                 $.post(url, {"token" : token}, function (data) {
                     var success = $(data).find("#content .page-notice.success");
+                    $("#content > .page-notice:gt(3)").remove();
                     if (success.length) {
                         success.append("<br />You have bought <a target='_blank' href='http://www.aywas.com/pp/view/" + petid + "/'>pet " + petid + "</a>");
                         $("#content").prepend(success.prop('outerHTML'));
@@ -49,7 +50,7 @@ $(document).bind('DOMNodeInserted', function(e) {
             });
 
             i++;
-        } 
+        }
     }
 });
 
