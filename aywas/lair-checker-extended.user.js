@@ -107,7 +107,10 @@ function lair_check() {
             breed = $(element).find(".gen-small > a > strong").text().split(' the ');
             breed = breed[breed.length - 1];
             breed = breed.trim().split('(')[0].trim().replace(/^\s*\S*(Male|Female|Androgynous|Hermaphrodite|Undecided|Robot|Genderless|Agender|Bigender|Genderqueer|Neutrois|Pangender|Genderfluid|Non-Binary|Intersex|Other)/i, "").trim();
-            id = Number($(element).find(".gen-small > a > strong").text().split('(')[1].match(/\d+/ig)[0]);
+            id = $(element).find(".gen-small > a > strong").text().split('(')[1].match(/\d+/ig);
+            if (id) {
+                id = Number(id[0]);
+            }
             name = $(element).find(".gen-small > a > strong").text();
             if (!breed.match(/Custom/ig)) {
                 if (!resultsTable[breed]) {
@@ -223,6 +226,17 @@ $(document).ready(function() {
                 } else {
                     $(this).css("background-color", "red");
                 }
+            }
+        });
+
+        $("select").each(function () {
+            if ($(this).attr("name") == "species_id") {
+                $(this).find("option").each(function () {
+                    var pet = $(this).html();
+                    if (petsList[pet]) {
+                        $(this).html(pet + " (OWNED)");
+                    }
+                });
             }
         });
     }
